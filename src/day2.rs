@@ -1,71 +1,42 @@
-use anyhow::{bail, Context};
+use crate::vm::{Word, VM};
+use anyhow::Context;
 use aoc_runner_derive::{aoc, aoc_generator};
-use std::num::ParseIntError;
-use std::ops::{Add, Mul};
-
-type Opcode = usize;
-type Index = usize;
-type Value = usize;
+use std::convert::TryInto;
 
 #[aoc_generator(day2)]
-fn parse_input(input: &str) -> anyhow::Result<Vec<Opcode>> {
+fn parse_input(input: &str) -> anyhow::Result<Vec<Word>> {
     input
         .split(',')
         .map(|v| v.parse())
-        .collect::<Result<Vec<Opcode>, ParseIntError>>()
+        .collect::<Result<Vec<_>, std::num::ParseIntError>>()
         .context("Unable to parse input.")
 }
 
-const OPCODE_ADD: Opcode = 1;
-const OPCODE_MUL: Opcode = 2;
-const OPCODE_RET: Opcode = 99;
-
-fn compute(tape: &mut [Opcode], mut pc: Index, noun: Index, verb: Index) -> anyhow::Result<Opcode> {
-    tape[1] = noun;
-    tape[2] = verb;
-
-    while tape[pc] != OPCODE_RET {
-        pc = match tape[pc] {
-            OPCODE_ADD => binop(Value::add)(tape, pc),
-            OPCODE_MUL => binop(Value::mul)(tape, pc),
-            _ => bail!("Unable to compute. Rejected program."),
-        }
-    }
-
-    Ok(tape[0])
-}
-
-fn binop<F>(binop: F) -> impl Fn(&mut [Opcode], Index) -> Index
-where
-    F: Fn(Value, Value) -> Value,
-{
-    move |tape: &mut [Opcode], pc: Index| {
-        let pc1 = tape[pc + 1];
-        let pc2 = tape[pc + 2];
-        let pc3 = tape[pc + 3];
-
-        tape[pc3] = binop(tape[pc1], tape[pc2]);
-
-        pc + 4
-    }
-}
-
 #[aoc(day2, part1)]
-pub fn part1(program: &[Opcode]) -> Value {
+pub fn part1(program: &[Word]) -> Word {
     let mut program = program.to_vec(); // because we need mutability for the current solution; and the aoc generator doesn't support it
-    compute(&mut program, 0, 12, 2).unwrap()
+
+    let mut vm = VM::new(&mut program);
+
+    vm.execute().unwrap()
 }
 
 // brute force
 #[aoc(day2, part2)]
-pub fn part2(program: &[Opcode]) -> Value {
-    let expected: usize = 19690720;
+pub fn part2(program: &[Word]) -> Word {
+    let expected: Word = 19690720;
 
-    const MAX: usize = 64;
+    const MAX: Word = 64;
 
     for noun in 0..=MAX {
         for verb in 0..=MAX {
-            if let Ok(v) = compute(&mut program.to_vec(), 0, noun, verb) {
+            let mem = &mut program.to_vec();
+            mem[1] = noun;
+            mem[2] = verb;
+
+            let mut vm = VM::new(mem);
+
+            if let Ok(v) = vm.execute() {
                 if v == expected {
                     dbg!(noun, verb);
                     return 100 * noun + verb;
@@ -84,7 +55,7 @@ mod tests {
 
     ide!();
 
-    fn inputs() -> anyhow::Result<Vec<Opcode>> {
+    fn inputs() -> anyhow::Result<Vec<Word>> {
         setup(2, parse_input)
     }
 
@@ -104,13 +75,20 @@ mod tests {
             30,
         },
     )]
-    fn part1_aoc_from_start(input: &mut [Opcode], expected: Opcode) {
-        assert_eq!(compute(input, 0, input[1], input[2]).unwrap(), expected);
+    fn part1_aoc_from_start(input: &mut [Word], expected: Word) {
+        let mut vm = VM::new(input);
+        assert_eq!(vm.execute().unwrap(), expected);
     }
 
     #[test]
     fn part1_aoc_with_error_state() {
-        assert_eq!(compute(&mut inputs().unwrap(), 0, 12, 2).unwrap(), 3895705);
+        let mem = &mut inputs().unwrap();
+        mem[1] = 12;
+        mem[2] = 2;
+
+        let mut vm = VM::new(mem);
+
+        assert_eq!(vm.execute().unwrap(), 3895705);
     }
 
     #[test]
