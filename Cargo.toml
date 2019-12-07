@@ -11,6 +11,8 @@ aoc-runner = "0.2.2"
 aoc-runner-derive = "0.2.2"
 
 anyhow = "1.0"
+itoa = "0.4.4"
+rayon = "1.2.1"
 
 # quick testing
 parameterized = "0.1.0"
