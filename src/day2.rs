@@ -1,7 +1,6 @@
 use crate::vm::{Word, VM};
 use anyhow::Context;
 use aoc_runner_derive::{aoc, aoc_generator};
-use std::convert::TryInto;
 
 #[aoc_generator(day2)]
 fn parse_input(input: &str) -> anyhow::Result<Vec<Word>> {
@@ -24,7 +23,7 @@ pub fn part1(program: &[Word]) -> Word {
 // brute force
 #[aoc(day2, part2)]
 pub fn part2(program: &[Word]) -> Word {
-    let expected: Word = 19690720;
+    let expected: Word = 19_690_720;
 
     const MAX: Word = 64;
 
@@ -88,7 +87,7 @@ mod tests {
 
         let mut vm = VM::new(mem);
 
-        assert_eq!(vm.execute().unwrap(), 3895705);
+        assert_eq!(vm.execute().unwrap(), 3_895_705);
     }
 
     #[test]

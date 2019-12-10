@@ -8,8 +8,7 @@ use aoc_runner_derive::{aoc, aoc_generator};
 #[derive(Debug)]
 struct AdjNum {
     start: usize, //index
-    end: usize,   //index // assume that start < end
-                  //    num: char,    //character
+    end: usize,   //index, assume that start < end
 }
 
 impl AdjNum {
@@ -44,7 +43,7 @@ impl Code {
     }
 
     // with allocation:
-    // Self::try_from_str(&number.to_string())
+    // `Self::try_from_str(&number.to_string())`
     fn from_number(number: u32) -> Result<Self> {
         let mut buffer = [0u8; 6];
         let n = itoa::write(&mut buffer[..], number).context("failed to parse u32")?;
@@ -77,18 +76,15 @@ impl Code {
     }
 
     // part 2
-
     fn good_code_for_forgetful_elf(number: u32) -> Option<Self> {
-        let option = Self::from_number(number)
+        Self::from_number(number)
             .ok()
             .filter(|v| v.increasing_criteria())
             .filter(|v| {
                 let vec = v.adjacent_characters();
 
                 vec.iter().filter(|twos| twos.just_two()).count() > 0
-            });
-
-        option
+            })
     }
 
     // these are the characters for which there are adj. numbers
@@ -148,89 +144,59 @@ fn parse_input(input: &str) -> Result<(u32, u32)> {
 /// be valid (after a previous validation).
 ///
 #[aoc(day4, part1)]
+#[allow(clippy::trivially_copy_pass_by_ref)] // this is how we receive the input from cargo-aoc
 fn part1(input: &(u32, u32)) -> usize {
-    (input.0..=input.1)
-        .into_iter()
-        .filter_map(|v| Code::good_code(v))
-        .count()
+    (input.0..=input.1).filter_map(Code::good_code).count()
 }
 
 #[aoc(day4, part2)]
+#[allow(clippy::trivially_copy_pass_by_ref)] // this is how we receive the input from cargo-aoc
 fn part2(input: &(u32, u32)) -> usize {
     (input.0..=input.1)
-        .into_iter()
-        .filter_map(|v| Code::good_code_for_forgetful_elf(v))
+        .filter_map(Code::good_code_for_forgetful_elf)
         .count()
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use parameterized::parameterized as pm;
-
-    ide!();
-
-    // todo make tests also compatible with just char input
-
-    // Part 1
-    // ======
-    //
-    //    fn inputs() -> (u32, u32) {
-    //        (111111, 111120)
-    //    }
-    //
-    //    #[pm(input = {
-    //        &inputs()
-    //    }, expected = {
-    //        9,
-    //    })]
-    //    fn part1_test(input: &(u32, u32), expected: usize) {
-    //        assert_eq!(part1(input), expected);
-    //    }
 
     // Part 1 (extra)
     // ==============
 
-    //    #[test]
-    //    fn adj() {
-    //        let code = Code {
-    //            tokens: [1, 1, 1, 1, 1, 1],
-    //        };
-    //
-    //        assert!(code.adjacency_criteria())
-    //    }
-    //
-    //    #[test]
-    //    fn incr() {
-    //        let code = Code {
-    //            tokens: [1, 1, 1, 1, 1, 1],
-    //        };
-    //
-    //        assert!(code.increasing_criteria())
-    //    }
-    //
-    //    #[test]
-    //    fn incr_fail() {
-    //        let code = Code {
-    //            tokens: [1, 1, 1, 1, 1, 0],
-    //        };
-    //
-    //        assert!(!code.increasing_criteria())
-    //    }
+    #[test]
+    fn adj() {
+        let code = Code {
+            tokens: ['1', '1', '1', '1', '1', '1'],
+        };
 
-    // Part 2
-    // ======
+        assert!(code.adjacency_criteria())
+    }
 
-    //    #[pm(input = {
-    //        &[1, 2, 4],
-    //        &[0],
-    //        &[],
-    //    }, expected = {
-    //        8,
-    //        0,
-    //        0,
-    //    })]
-    //    fn part2_test(input: &[Num], expected: Output) {
-    //        assert_eq!(part2(input), expected);
-    //    }
+    #[test]
+    fn adj_none() {
+        let code = Code {
+            tokens: ['1', '2', '3', '4', '5', '1'],
+        };
+
+        assert!(!code.adjacency_criteria())
+    }
+
+    #[test]
+    fn incr() {
+        let code = Code {
+            tokens: ['1', '1', '1', '1', '1', '1'],
+        };
+
+        assert!(code.increasing_criteria())
+    }
+
+    #[test]
+    fn incr_fail() {
+        let code = Code {
+            tokens: ['1', '1', '1', '1', '1', '0'],
+        };
+
+        assert!(!code.increasing_criteria())
+    }
 }

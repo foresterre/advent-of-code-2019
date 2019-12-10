@@ -9,24 +9,23 @@ fn parse_input_day1(input: &str) -> Result<Vec<Mass>, std::num::ParseIntError> {
     input.lines().map(|l| l.parse()).collect()
 }
 
-fn calc_fuel(mass: &Mass) -> Fuel {
+fn calc_fuel(mass: Mass) -> Fuel {
     mass / 3 - 2
 }
 
 #[aoc(day1, part1)]
 fn part1(mass: &[Mass]) -> Fuel {
-    mass.iter().map(calc_fuel).sum()
+    mass.iter().map(|v| calc_fuel(*v)).sum()
 }
 
-fn pfff(mass: &Mass) -> Fuel {
-    let mut inputs = *mass;
+fn pfff(mut mass: Mass) -> Fuel {
     let mut fuel = 0;
 
-    while inputs > 0 {
-        let grossed = calc_fuel(&inputs);
+    while mass > 0 {
+        let grossed = calc_fuel(mass);
         if grossed > 0 {
             fuel += grossed;
-            inputs = grossed;
+            mass = grossed;
         } else {
             break;
         }
@@ -37,7 +36,7 @@ fn pfff(mass: &Mass) -> Fuel {
 
 #[aoc(day1, part2)]
 fn part2(mass: &[Mass]) -> Fuel {
-    mass.iter().map(pfff).sum()
+    mass.iter().map(|v| pfff(*v)).sum()
 }
 
 trait PositiveMass {
@@ -58,28 +57,28 @@ trait PositiveMass {
 
 impl PositiveMass for Mass {}
 
-fn iterator(mass: &Mass) -> impl Iterator<Item = Mass> {
-    iter::successors(Some(*mass), |next| calc_fuel(next).ensure_mass_positive()).skip(1)
+fn iterator(mass: Mass) -> impl Iterator<Item = Mass> {
+    iter::successors(Some(mass), |next| calc_fuel(*next).ensure_mass_positive()).skip(1)
 }
 
 #[aoc(day1, part2, Iterator)]
 fn part2_iterator(mass: &[Mass]) -> Fuel {
-    let grossed_fuel: fn(&i32) -> i32 = |mass: &Mass| iterator(mass).sum();
-    mass.iter().map(grossed_fuel).sum()
+    let grossed_fuel: fn(i32) -> i32 = |mass: Mass| iterator(mass).sum();
+    mass.iter().map(|v| grossed_fuel(*v)).sum()
 }
 
-fn recursive(mass: &Mass) -> Fuel {
+fn recursive(mass: Mass) -> Fuel {
     let fuel = calc_fuel(mass);
     if fuel <= 0 {
         0
     } else {
-        fuel + recursive(&fuel)
+        fuel + recursive(fuel)
     }
 }
 
 #[aoc(day1, part2, Recursive)]
 fn part2_recursive(mass: &[Mass]) -> Fuel {
-    mass.iter().map(recursive).sum()
+    mass.iter().map(|v| recursive(*v)).sum()
 }
 
 #[cfg(test)]
