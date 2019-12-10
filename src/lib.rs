@@ -24,12 +24,13 @@ macro_rules! ide {
 
 mod day1;
 mod day2;
-//mod refine; //day3;
-
+mod day3;
 mod day4;
 mod day5;
 
-// the Intcode vm
+mod day8;
+
+// the intcode vm
 mod vm;
 
 aoc_lib! { year = 2019 }
