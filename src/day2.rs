@@ -1,4 +1,4 @@
-use crate::vm::{Word, VM};
+use crate::vm::{ExecutionOption, Word, VM};
 use anyhow::Context;
 use aoc_runner_derive::{aoc, aoc_generator};
 
@@ -17,7 +17,7 @@ pub fn part1(program: &[Word]) -> Word {
 
     let mut vm = VM::new(&mut program);
 
-    vm.execute().unwrap()
+    vm.execute(ExecutionOption::default()).unwrap()
 }
 
 // brute force
@@ -35,7 +35,7 @@ pub fn part2(program: &[Word]) -> Word {
 
             let mut vm = VM::new(mem);
 
-            if let Ok(v) = vm.execute() {
+            if let Ok(v) = vm.execute(ExecutionOption::default()) {
                 if v == expected {
                     dbg!(noun, verb);
                     return 100 * noun + verb;
@@ -76,7 +76,7 @@ mod tests {
     )]
     fn part1_aoc_from_start(input: &mut [Word], expected: Word) {
         let mut vm = VM::new(input);
-        assert_eq!(vm.execute().unwrap(), expected);
+        assert_eq!(vm.execute(ExecutionOption::default()).unwrap(), expected);
     }
 
     #[test]
@@ -87,7 +87,7 @@ mod tests {
 
         let mut vm = VM::new(mem);
 
-        assert_eq!(vm.execute().unwrap(), 3_895_705);
+        assert_eq!(vm.execute(ExecutionOption::default()).unwrap(), 3_895_705);
     }
 
     #[test]

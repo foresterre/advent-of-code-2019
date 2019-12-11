@@ -1,30 +1,31 @@
+use crate::vm::{ExecutionOption, Word, VM};
 use anyhow::{Context, Result};
 use aoc_runner_derive::{aoc, aoc_generator};
-use std::ops::Range;
 
 #[aoc_generator(day5)]
-fn parse_input(input: &str) -> Result<Vec<u32>> {
+fn parse_input(input: &str) -> Result<Vec<Word>> {
     input
         .split(',')
-        .map(|v| v.parse().with_context(|| "Not a valid number."))
-        .collect::<Result<Vec<_>>>()
+        .map(|v| v.parse())
+        .collect::<Result<Vec<_>, std::num::ParseIntError>>()
+        .context("Unable to parse input.")
 }
 
 #[aoc(day5, part1)]
-fn part1(input: &[u32]) -> u32 {
-    input.iter().sum()
+fn part1(input: &[Word]) -> Result<Word> {
+    let mut program = input.to_vec(); // because we need mutability for the current solution; and the aoc generator doesn't support it
+
+    let mut vm = VM::with_inputs(&mut program, vec![1]);
+    vm.execute(ExecutionOption::OutputByTapeOutput)
 }
 
-//#[aoc(day4, part2)]
-//fn part2(input: &[Num]) -> Output {
-//    input.iter().fold(0, |acc, x| {
-//        if acc == 0 {
-//            return *x;
-//        } else {
-//            acc * x
-//        }
-//    })
-//}
+#[aoc(day5, part2)]
+fn part2(input: &[Word]) -> Result<Word> {
+    let mut program = input.to_vec(); // because we need mutability for the current solution; and the aoc generator doesn't support it
+
+    let mut vm = VM::with_inputs(&mut program, vec![5]);
+    vm.execute(ExecutionOption::OutputByTapeOutput)
+}
 
 #[cfg(test)]
 mod tests {
@@ -33,21 +34,42 @@ mod tests {
 
     ide!();
 
-    #[pm(input = {
-        &[1, 2, 3],
-    }, expected = {
-        6,
-    })]
-    fn part1_test(input: &[u32], expected: u32) {
-        assert_eq!(part1(input), expected);
-    }
+    #[cfg(test)]
+    mod tests {
+        use super::*;
+        use crate::setup;
 
-    //    #[pm(input = {
-    //        &[1, 2, 4],
-    //    }, expected = {
-    //        0,
-    //    })]
-    //    fn part2_test(input: &[Num], expected: Output) {
-    //        assert_eq!(part2(input), expected);
-    //    }
+        ide!();
+
+        fn _inputs() -> anyhow::Result<Vec<Word>> {
+            setup(5, parse_input)
+        }
+
+        #[pm(
+        program = {
+            &mut [3, 12, 6, 12, 15, 1, 13, 14, 13, 4, 13, 99, - 1, 0, 1, 9],
+            &mut [3, 12, 6, 12, 15, 1, 13, 14, 13, 4, 13, 99, - 1, 0, 1, 9],
+            &mut [3, 3, 1105, - 1, 9, 1101, 0, 0, 12, 4, 12, 99, 1],
+            &mut [3, 3, 1105, - 1, 9, 1101, 0, 0, 12, 4, 12, 99, 1],
+        },
+        input = {
+            1,
+            0,
+            1,
+            0,
+        },
+        expected = {
+            1,
+            0,
+            1,
+            0,
+        })]
+        fn jump_if_true_mirror(program: &mut [Word], input: Word, expected: Word) {
+            let mut vm = VM::with_inputs(program, vec![input]);
+            assert_eq!(
+                vm.execute(ExecutionOption::OutputByTapeOutput).unwrap(),
+                expected
+            );
+        }
+    }
 }
