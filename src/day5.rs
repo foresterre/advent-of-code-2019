@@ -32,7 +32,36 @@ mod tests {
     use super::*;
     use parameterized::parameterized as pm;
 
-    ide!();
+    mod my_result {
+        use super::*;
+        use crate::setup;
+
+        ide!();
+
+        fn problem_input() -> anyhow::Result<Vec<Word>> {
+            setup(5, parse_input)
+        }
+
+        #[test]
+        fn part1() {
+            let mut memory = problem_input().unwrap();
+            let mut vm = VM::with_inputs(&mut memory, vec![1]);
+            assert_eq!(
+                vm.execute(ExecutionOption::OutputByTapeOutput).unwrap(),
+                5182797
+            );
+        }
+
+        #[test]
+        fn part2() {
+            let mut memory = problem_input().unwrap();
+            let mut vm = VM::with_inputs(&mut memory, vec![5]);
+            assert_eq!(
+                vm.execute(ExecutionOption::OutputByTapeOutput).unwrap(),
+                12077198
+            );
+        }
+    }
 
     #[cfg(test)]
     mod tests {
@@ -40,10 +69,6 @@ mod tests {
         use crate::setup;
 
         ide!();
-
-        fn _inputs() -> anyhow::Result<Vec<Word>> {
-            setup(5, parse_input)
-        }
 
         #[pm(
         program = {
