@@ -1,5 +1,3 @@
-#![allow(dead_code)]
-
 use anyhow::{Context, Result};
 use aoc_runner_derive::{aoc, aoc_generator};
 use std::cmp::Ordering;
