@@ -13,6 +13,7 @@ aoc-runner-derive = "0.2.2"
 anyhow = "1.0"
 itoa = "0.4.4"
 image = "0.23.0-preview.0"
+petgraph = "0.4.13"
 
 # quick testing
-parameterized = "0.1.0"
+parameterized = "0.1.1"
